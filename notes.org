@@ -37,4 +37,11 @@ Haskell Notes
 * Anonymous functions, lambda expressions.  Use backslash for lambda
   * \x -> x + x
   * odds n = map (\x -> x*2 +1) [0..n-1]
+* sections -- partial application of operators
+  * 1 + 2
+  * (1+) is a function that takes one argument and uses that as the second argument in "1 + _"
+  * (+2) is a function that takes one argument and uses that as the first argument in "_ + 2"
 
+* Once you use a name for a type, you can't use it anywhere else
+  * does haskell have crappy namespacing?
+  * http://stackoverflow.com/questions/4260507/avoiding-namespace-pollution-in-haskell
