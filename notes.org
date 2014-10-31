@@ -18,6 +18,8 @@ Haskell Notes
 * After the first letter, identifiers can contain a lot of different letters, including digits, underscores, and single quotes
 * By convention, list variables end with s, lists of lists with ss, etc.
 * use -- for comments
+* "Overloaded" functions is one where there is a class constraint
+  * sum :: Num a => [a] -> a
 * Define functions:
   * With equals sign.  Looks a bit mathematical.
     double x = x + x
@@ -46,3 +48,17 @@ Haskell Notes
 * Once you use a name for a type, you can't use it anywhere else
   * does haskell have crappy namespacing?
   * http://stackoverflow.com/questions/4260507/avoiding-namespace-pollution-in-haskell
+* list comprehensions
+  * The thing that gives the range of values is a "generator"
+    [x*x | x <- [1, 2, 3, 4, 5]]
+    so the "x <- [1, 2, 3, 4, 5]" part is a generator
+  * Order of the generators matters, the first generator moves most slowly, like nested fors
+    later generators can use variables from earlier generators
+  * filters on a generator are "guards", added after a comma
+    factors n = [x | x <- [1..n], n `mod` x == 0]
+  * zip
+    pairs xs = zip xs (tail xs)
+    sorted xs = and [x <= y | (x, y) <- pairs xs]
+    positions x xs = [i | (x`, i) <- zip xs [0..n], x == x`]
+      where n = length xs - 1
+
