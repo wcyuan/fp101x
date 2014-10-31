@@ -15,6 +15,7 @@ Haskell Notes
   Use parens to control binding.
 * Type variables start with lowercase (typically a, b, c,...), Type names start with upper case
 * variables and functions must start with lowercase.
+* After the first letter, identifiers can contain a lot of different letters, including digits, underscores, and single quotes
 * By convention, list variables end with s, lists of lists with ss, etc.
 * use -- for comments
 * Define functions:
