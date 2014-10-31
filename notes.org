@@ -1,0 +1,40 @@
+Haskell Notes
+
+* whitespace matters.  Parallel assignments must start at the same column.
+* no statements.  everything is an expression.
+* type inference
+* all elements of a list must be the same type, but can have any length
+* elements of tuples can have any type, but have fixed length
+* Most functions are prefix, but not all (i.e., +, - are infix operators)
+  * `foo` changes foo from prefix to infix
+  * (foo) changes foo from infix to prefix
+* There are no parens for calling functions, just
+  f x y
+  this calls f on x, which returns a new, curried version of f, and that gets called on y
+* Function calls bind very tightly, more tightly than arithmetic operators, for example.
+  Use parens to control binding.
+* Type variables start with lowercase (typically a, b, c,...), Type names start with upper case
+* variables and functions must start with lowercase.
+* By convention, list variables end with s, lists of lists with ss, etc.
+* use -- for comments
+* Define functions:
+  * With equals sign.  Looks a bit mathematical.
+    double x = x + x
+  * Can also define functions with "guarded equations", no equals sign needed.
+    abs n | n >= 0    = n
+          | otherwise = -n
+  * Pattern matching
+    * for example:
+      (&&) :: Bool -> Bool -> Bool
+      True && True = True
+      _ && __ = False
+    * But that always evaluates both arguments, so this is better:
+      True && b = b
+      False && _ = False
+    * Patterns are matched in order.
+    * cannot repeat variables, like "a && a = a"
+    * Lists, instead of [a, b, c] is (a : (b : (c : [])))
+* Anonymous functions, lambda expressions.  Use backslash for lambda
+  * \x -> x + x
+  * odds n = map (\x -> x*2 +1) [0..n-1]
+
