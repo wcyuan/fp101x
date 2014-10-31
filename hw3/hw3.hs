@@ -46,8 +46,8 @@ safetail4 xs
 
 -- doesn't work, patterns are matched in order
 -- this gives a compiler error when loading the file too
-safetail5 xs = tail xs
-safetail5 [] = []
+-- safetail5 xs = tail xs
+-- safetail5 [] = []
 
 safetail6 [] = []
 safetail6 xs = tail xs
@@ -63,5 +63,124 @@ safetail8
           (_ : xs) -> xs
 
 -------------------------------------------------------------------
+
+-- Redefine the || operator
+-- Enter this in your ghci first:
+--
+-- import Prelude hiding ((||))
+
+-- False || False = False
+-- _ || _ = True
+
+-- False || b = b
+-- True || _ = True
+
+-- syntax is fine, but logic is wrong
+-- b || c
+--   | b == c = True
+--   | otherwise = False
+
+-- b || c
+--   | b == c = b
+--   | otherwise = True
+
+-- b || False = b
+-- _ || True = True
+
+-- b || c
+--   | b == c = c
+--   | otherwise = True
+
+-- Doesn't work
+-- b || True = b
+-- _ || True = True
+
+-- False || False = False
+-- False || True = True
+-- True || False = True
+-- True || True = True
+
+-------------------------------------------------------------------
+
+-- Redefine the && operator
+-- Enter this in your ghci first:
+--
+-- import Prelude hiding ((&&))
+
+-- True && True = True
+-- _ && _ = False
+
+-- a && b = if a then if b then True else False else False
+
+-- incorrect logic
+-- a && b = if not (a) then not (b) else True
+
+-- doesn't work
+-- a && b = if a then b
+
+-- wrong logic
+-- a && b = if a then if b then False else True else False
+
+-- a && b = if a then b else False
+
+-- a && b = if b then a else False
+
+
+-------------------------------------------------------------------
+
+-- What is another way of writing
+-- mult x y z = x * y * z
+-- ?
+
+-- mult x y z = \ x -> (\ y -> (\ z -> x * y * z))
+
+-- mult = \x -> (x * \y -> (y * \z -> z))
+
+-- this one is right
+-- mult = \x -> (\y -> (\z -> x * y * z))
+
+-- mult = ((((\x -> \y) -> \z) -> x * y) * z)
+
+-------------------------------------------------------------------
+
+-- what does this expression mean?
+-- f x g y
+
+-- ((f x) g) y
+
+-------------------------------------------------------------------
+
+-- The type signature
+-- f :: (a -> a) -> a
+-- means that f
+
+-- takes a function as its argument?  Yes
+-- takes two arguments one at a time?  No
+-- takes a pair of arguments? No
+-- returns a function as its result? No
+-- returns a pair of results? No
+
+-------------------------------------------------------------------
+
+-- Choose the correct implementation of remove :: Int -> [a] -> [a]
+-- which removes the nth element from a list
+--
+-- remove 0 [1, 2, 3, 4] = [2, 3, 4]
+
+remove n xs = take n xs ++ drop (n + 1) xs
+
+-------------------------------------------------------------------
+
+-- What is the output of the function call
+-- funct 3 [1, 2, 3, 4, 5, 6, 7]
+-- ?
+
+funct :: Int -> [a] -> [a]
+funct x xs = take (x + 1) xs ++ drop x xs
+
+-- [1, 2, 3, 4, 4, 5, 6, 7]
+
+-------------------------------------------------------------------
+
 
 
