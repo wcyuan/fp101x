@@ -61,4 +61,5 @@ Haskell Notes
     sorted xs = and [x <= y | (x, y) <- pairs xs]
     positions x xs = [i | (x', i) <- zip xs [0..n], x == x']
       where n = length xs - 1
-
+* ++ is list concatenation
+* : is cons
