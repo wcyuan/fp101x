@@ -1,4 +1,8 @@
 ------------------------------------------------------------------
+-- note:
+--    foldl takes (f acc elt)
+---   foldr takes (f elt acc)
+------------------------------------------------------------------
 
 all :: (a -> Bool) -> [a] -> Bool
 
@@ -8,14 +12,14 @@ all :: (a -> Bool) -> [a] -> Bool
 -- *Main> Main.all (==1) [1, 1, 2]
 -- False
 
-all p xs = and (map p xs)                  -- yes
--- all p xs = map p (and xs)               -- no
--- all p = and . map p                     -- yes
--- all p = not . any (not . p)             -- yes
--- all p = map p . and                     -- no
--- all p xs = foldl (&&) True (map p xs)   -- yes
--- all p xs = foldr (&&) False (map p xs)  -- compiles, but doesn't do what you want
--- all p = foldr (&&) True . map p         -- yes
+all p xs = and (Prelude.map p xs)                  -- yes
+-- all p xs = Prelude.map p (and xs)               -- no
+-- all p = and . Prelude.map p                     -- yes
+-- all p = not . any (not . p)                     -- yes
+-- all p = Prelude.map p . and                     -- no
+-- all p xs = foldl (&&) True (Prelude.map p xs)   -- yes
+-- all p xs = foldr (&&) False (Prelude.map p xs)  -- compiles, but doesn't do what you want
+-- all p = foldr (&&) True . Prelude.map p         -- yes
 
 ------------------------------------------------------------------
 
@@ -29,14 +33,14 @@ any :: (a -> Bool) -> [a] -> Bool
 -- False
 
 
--- any p = map p . or                                  -- no
-any p = or . map p                                     -- yes
+-- any p = Prelude.map p . or                          -- no
+any p = or . Prelude.map p                             -- yes
 -- any p xs = length (filter p xs) > 0                 -- yes
 -- any p = not . null . dropWhile (not . p)            -- yes
 -- any p = null . filter p                             -- compiles but does the wrong thing
 -- any p xs = not (Main.all (\ x -> not (p x)) xs)     -- yes
 -- any p xs = foldr(\ x acc -> (p x) || acc) False xs  -- yes
--- any p xs = foldr (||) True (map p xs)               -- compiles but does the wrong thing
+-- any p xs = foldr (||) True (Prelude.map p xs)       -- compiles but does the wrong thing
 
 ------------------------------------------------------------------
 
@@ -110,6 +114,60 @@ dropWhile p (x : xs)
 --   where add [] x = if p x then [] else [x]
 --         add acc x = x : acc
 
+------------------------------------------------------------------
 
+map :: (a -> b) -> [a] -> [b]
+
+-- test with
+-- *Main> Main.map (+1) [1, 2, 3]
+-- [2,3,4]
+
+-- map f = foldr (\ x xs -> xs ++ [f x]) []   -- no, this is backwards
+-- map f = foldr (\ x xs -> f x ++ xs) []     -- no can't ++ with f x, which isn't a list
+-- map f = foldl (\ xs x -> f x : xs) []      -- no, this is backwards
+map f = foldl (\ xs x -> xs ++ [f x]) []      -- yes
+
+------------------------------------------------------------------
+
+filter :: (a -> Bool) -> [a] -> [a]
+
+-- test with
+-- *Main> Main.filter (not . (==1)) [1, 2, 1, 3]
+-- [2,3]
+
+-- filter p = foldl (\ xs x -> if p x then x : xs else xs) []     -- backwards
+filter p = foldr (\ x xs -> if p x then x : xs else xs) []     -- yes
+-- filter p = foldr (\ x xs -> if p x then xs ++ [x] else xs) []  -- backwards
+-- filter p = foldl (\ x xs -> if p x then xs ++ [x] else xs) []  -- invalid
+-- filter p = foldl (\ xs x -> if p x then xs ++ [x] else xs) []  -- this seems to work too, but it's not an option (I added it)
+
+------------------------------------------------------------------
+
+dec2int :: [Integer] -> Integer
+-- dec2int [2, 3, 4, 5]
+-- 2345
+-- dec2int []
+-- 0
+-- dec2int [0, 0, 0, 0]
+-- 0
+-- dec2int [0, 3, 0, 1]
+-- 301
+
+-- dec2int = foldr (\ x y -> 10 * x + y) 0 -- switches the arguments
+-- dec2int = foldl (\ x y -> x + 10 * y) 0
+dec2int = foldl (\ x y -> 10 * x + y) 0  -- switches the arguments
+-- dec2int = foldr (\ x y -> x + 10 * y) 0 -- backwards
+
+------------------------------------------------------------------
+------------------------------------------------------------------
+------------------------------------------------------------------
+------------------------------------------------------------------
+------------------------------------------------------------------
+------------------------------------------------------------------
+------------------------------------------------------------------
+------------------------------------------------------------------
+------------------------------------------------------------------
+------------------------------------------------------------------
+------------------------------------------------------------------
 ------------------------------------------------------------------
 ------------------------------------------------------------------
