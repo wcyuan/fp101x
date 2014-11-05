@@ -8,6 +8,7 @@ Haskell Notes
   * all elements of a list must be the same type, but can have any length
   * make lists with []
   * Can do ranges with, e.g. [1..3].  [1..] is an infinite list
+  * Strings are just lists of chars
 * tuples
   * elements of tuples can have any type, but have fixed length
   * make tuples with parens
