@@ -195,14 +195,64 @@ uncurry f = \ (x, y) -> f x y
 
 ------------------------------------------------------------------
 
+unfold :: (b -> Bool) -> (b -> a) -> (b -> b) -> b -> [a]
+unfold p h t x
+  | p x = []
+  | otherwise = h x : unfold p h t (t x)
 
+-- produces empty list if p x is True
+-- otherwise, applies (h x) to the head and (t x) to generate another seed
+
+-- Example of int2bin
+--
+-- takes a non-negative integer into a binary number with least
+-- significant bit first
+--
+type Bit = Int
+int2bin :: Int -> [Bit]
+int2bin 0 = []
+int2bin n = n `mod` 2 : int2bin (n `div` 2)
+
+-- int2bin 13
+-- [1, 0, 1, 1]
+-- int2bin (-0) -- ok for 0 to be negative
+-- []
+
+-- could have been written:
+-- int2bin = unfold (== 0) (`mod` 2) (`div` 2)
+
+-- chop8 takes a list of bits and chops it into lists of at most 8 bits
+chop8 :: [Bit] -> [[Bit]]
+-- chop8 [] = []
+-- chop8 bits = take 8 bits : chop8 (drop 8 bits)
+
+-- could have been:
+
+-- chop8 = unfold [] (drop 8) (take 8)
+chop8 = unfold null (take 8) (drop 8)
+-- chop8 = unfold null (drop 8) (take 8)
+-- chop8 = unfold (const False) (take 8) (drop 8)
 
 ------------------------------------------------------------------
+
+-- implement map with unfold
+
+mapu :: (a -> b) -> [a] -> [b]
+
+-- mapu f = unfold null (f) tail
+-- mapu f = unfold null (f (head)) tail
+mapu f = unfold null (f . head) tail
+-- mapu f = unfold empty (f . head) tail
+
 ------------------------------------------------------------------
-------------------------------------------------------------------
-------------------------------------------------------------------
-------------------------------------------------------------------
-------------------------------------------------------------------
-------------------------------------------------------------------
-------------------------------------------------------------------
+
+-- implement iterate using unfold
+
+iterate :: (a -> a) -> a -> [a]
+
+iterate f = unfold (const False) id f
+-- iterate f = unfold (const False) f f
+-- iterate f = unfold (const True) id f
+-- iterate f = unfold (const True) id f
+
 ------------------------------------------------------------------
