@@ -16,6 +16,12 @@ Haskell Notes
   * `foo` changes foo from prefix to infix
   * (foo) changes foo from infix to prefix
 * parens can be used for grouping or for making tuples
+* $ can also be used for grouping.  Everything after the $ takes precedence of the stuff before
+  * These are equivalent:
+    * putStrLn (show (1 + 1))
+    * putStrLn (show $ 1 + 1)
+    * putStrLn $ show (1 + 1)
+    * putStrLn $ show $ 1 + 1
 * There are no parens for calling functions, just
   f x y
   this calls f on x, which returns a new, curried version of f, and that gets called on y
