@@ -63,3 +63,8 @@ Haskell Notes
       where n = length xs - 1
 * ++ is list concatenation
 * : is cons
+* . is function composition
+* foldl's first argument is a function of the form (f acc elt) -- the first argument is the accumulator
+* foldr's first argument is a function of the form (f elt acc) -- the second argument is the accumulator
+
+
