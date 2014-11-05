@@ -1,13 +1,20 @@
 Haskell Notes
 
 * whitespace matters.  Parallel assignments must start at the same column.
-* no statements.  everything is an expression.
+  * Sometimes you can use {} instead of whitespace to control blocks, but you should avoid it
+* no statements.  everything is an expression (everything has a return value)
 * type inference
-* all elements of a list must be the same type, but can have any length
-* elements of tuples can have any type, but have fixed length
+* lists
+  * all elements of a list must be the same type, but can have any length
+  * make lists with []
+  * Can do ranges with, e.g. [1..3].  [1..] is an infinite list
+* tuples
+  * elements of tuples can have any type, but have fixed length
+  * make tuples with parens
 * Most functions are prefix, but not all (i.e., +, - are infix operators)
   * `foo` changes foo from prefix to infix
   * (foo) changes foo from infix to prefix
+* parens can be used for grouping or for making tuples
 * There are no parens for calling functions, just
   f x y
   this calls f on x, which returns a new, curried version of f, and that gets called on y
