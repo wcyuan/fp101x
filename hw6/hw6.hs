@@ -144,6 +144,8 @@ filter p = foldr (\ x xs -> if p x then x : xs else xs) []     -- yes
 ------------------------------------------------------------------
 
 dec2int :: [Integer] -> Integer
+
+-- test with
 -- dec2int [2, 3, 4, 5]
 -- 2345
 -- dec2int []
@@ -159,9 +161,42 @@ dec2int = foldl (\ x y -> 10 * x + y) 0  -- switches the arguments
 -- dec2int = foldr (\ x y -> x + 10 * y) 0 -- backwards
 
 ------------------------------------------------------------------
+
+-- Invalid because sum is not a function from a -> a, it is a function from [a] -> a
+--
+-- sumsqreven = compose [sum, Prelude.map (^ 2), Prelude.filter even]
+
+compose :: [a -> a] -> (a -> a)
+compose = foldr (.) id
+
 ------------------------------------------------------------------
+
+curry :: ((a, b) -> c) -> a -> b -> c
+
+-- takes a function that takes its arguments as a pair and transforms
+-- it into a function that takes its arguments one at a time
+
+-- curry f = \ x y -> f x y
+-- curry f = \ x y -> f
+curry f = \ x y -> f (x, y)
+-- curry f = \ (x, y) -> f x y
+
 ------------------------------------------------------------------
+
+uncurry :: (a -> b -> c) -> (a, b) -> c
+
+-- converts a function that takes its arguments one at a time into a
+-- function that takes its arguments as a pair
+
+uncurry f = \ (x, y) -> f x y
+-- uncurry f = \ x y -> f (x, y)
+-- uncurry f = \ (x, y) -> f
+-- uncurry f = \ x y -> f
+
 ------------------------------------------------------------------
+
+
+
 ------------------------------------------------------------------
 ------------------------------------------------------------------
 ------------------------------------------------------------------
