@@ -3,6 +3,18 @@ Haskell Notes
 * whitespace matters.  Parallel assignments must start at the same column.
   * Sometimes you can use {} instead of whitespace to control blocks, but you should avoid it
 * no statements.  everything is an expression (everything has a return value)
+* It seems that you can only do assignments in a script/module, not in an interpreter.
+  * If you want to do assignments in the interpreter, you have to use let:
+    let foo = 3
+  * You can use {} to write long definitions in one line
+  * :{ allows you to enter multiple lines until :}
+  * No idea how to put a type declaration at the interpreter prompt
+* It seems you can only have expressions in the interpreter, not in a script/module
+  * in a module, it will lead to a compile parse error "naked expression at top level"
+    I guess it makes some sense -- an random expression in a module
+    would be evaluated, but the output would just be thrown away.  In
+    a language with no side effects, there's no point for an
+    expression
 * type inference
 * lists
   * all elements of a list must be the same type, but can have any length
@@ -110,3 +122,96 @@ Haskell Notes
   type as the input, and if that's what it did it'd just be reduce.
 
   Supposed to read http://www.cs.nott.ac.uk/~gmh/monads
+* Create new types with the 'data' command
+  data Expr = Val Int | Div Expr Expr
+
+  eval           :: Expr -> Int
+  eval (Val n)   =  n
+  eval (Div x y) =  eval x `div` eval y
+* Create classes with the 'class' command and the 'instance' command
+  * 'class' specifies the methods that every instance needs to define
+    It can also specify default implementations for those methods, but
+    doesn't need to
+
+   class Eq a where
+      (==) :: a -> a -> Bool
+      (/=) :: a -> a -> Bool
+
+      x /= y = not (x == y)
+
+   An instance then defines the missing methods.  Instances may not
+   define new types/methods that aren't in the original class.
+
+   instance Eq Bool where
+      False == False = True
+      True  == True  = True
+      _     == _     = False
+
+* Monads
+  Here is a quick summary of monads, based on reading
+
+  http://www.cs.nott.ac.uk/~gmh/monads
+
+
+  The basic idea behind monads is to implement sequential,
+  state-changing programming using functional style, where functions
+  should have no side effects.*
+
+  * Having no side effects is great because it makes functions "easier
+  to reason about".  For example, it's easier to write tests for,
+  easier to move functions around since it's easier to see its
+  effects, etc.
+
+  The basic strategy is simple: all functions should take the relevant
+  state of the world as one of its inputs and output the changed state
+  of the world.  Then you can chain them together by passing the
+  changed state to the next function.
+
+  The idea of monads is just some conventions and syntactic sugar
+  around this idea.
+
+  * A monad is any type that supports two functions:
+
+    * return - this is how the sequence ends.  This basically returns
+      a value and returns the state unchanged.
+
+    * >>= (aka bind) - this is how the state is propagates from one
+      function in the sequence to the next.
+
+      This takes a function and a state.  It applies the function on
+      the state to get a new state, and it returns that new state.
+
+    * How these are defined depends on your application.
+
+    * The rest of the magic is simply the syntactic sugar that Haskell
+      has that makes currying look simple
+
+      You can use bind to make something that looks like this:
+
+      eval (Val n)   = Just n
+      eval (Div x y) = eval x >>= (\n ->
+                       eval y >>= (\m ->
+                       safediv n m))
+
+      That is, the first bind calls a function on an argument (x) and
+      passes the result to another function.  The second function
+      evaluates the second argument.  The third function takes the two
+      prior curried results and does the real operation.
+
+      In general, monads have syntactic sugar that turns this mess of currying:
+
+      m1 >>= \x1 ->
+      m2 >>= \x2 ->
+      ...
+      mn >>= \xn ->
+      f x1 x2 ... xn
+
+      into something that looks sequential
+
+      do x1 <- m1
+         x2 <- m2
+         ...
+         xn <- mn
+         f x1 x2 ... xn
+
+
