@@ -108,3 +108,5 @@ Haskell Notes
   the monads get their input.  Do they each run on the previous
   monad's output?  But the monad doesn't return something of the same
   type as the input, and if that's what it did it'd just be reduce.
+
+  Supposed to read http://www.cs.nott.ac.uk/~gmh/monads
