@@ -80,5 +80,31 @@ Haskell Notes
 * . is function composition
 * foldl's first argument is a function of the form (f acc elt) -- the first argument is the accumulator
 * foldr's first argument is a function of the form (f elt acc) -- the second argument is the accumulator
+* type aliases
+  * e.g.:
+    type Parser a = String -> [(a, String)]
+    now, saying:
+      item :: Parser Char
+    is equivalent to saying:
+      item :: String -> [(Char, String)]
+    and
+      p :: Parser (Char,Char)
+    is equivalent to:
+      p :: String -> [((Char,Char), String)]
+    Parser is an example of a monad
+* do keyword --
+  do monad
+     a <- monad
+     b <- monad
+     monad
+     monad
+  Evaluates each monad in sequence.
+  If any monad fails, the whole thing fails.
+  Return value is the return value of the last expression
+  Intermediate values are discarded unless you assign them
+  Do only works with monads.
 
-
+  It's totally unclear so far what makes something a monad, and how
+  the monads get their input.  Do they each run on the previous
+  monad's output?  But the monad doesn't return something of the same
+  type as the input, and if that's what it did it'd just be reduce.
