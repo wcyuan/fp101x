@@ -307,7 +307,7 @@ mapM' :: Monad m => (a -> m b) -> [a] -> m [b]
 --
 
 -- seems to work
--- mapM' f as = sequence' (map f as)
+mapM' f as = sequence' (map f as)
 
 {-
 -- seems to work
@@ -366,6 +366,129 @@ mapM' f (a : as)
       	do bs <- mapM' f as
 	   return (bs ++ [b])
 -}
+
+--------------------------------------------
+
+filterM' :: Monad m => (a -> m Bool) -> [a] -> m [a]
+
+-- takes a "predicate" of type Monad m => a -> m Bool and uses this to
+-- filter a finite, non-partial list of non-bottom elements of type a.
+
+{-
+-- seems to return everything
+filterM' _ [] = return []
+filterM' p (x : xs)
+  = do flag <- p x
+       ys <- filterM' p xs
+       return (x : ys)
+-}
+
+-- seems to work
+filterM' _ [] = return []
+filterM' p (x : xs)
+  = do flag <- p x
+       ys <- filterM' p xs
+       if flag then return (x : ys) else return ys
+
+{-
+-- does not compile
+filterM' _ [] = return []
+filterM' p (x : xs)
+  = do ys <- filterM' p xs
+       if p x then return (x : ys) else return ys
+-}
+
+{-
+-- reverses the predicate
+filterM' _ [] = return []
+filterM' p (x : xs)
+  = do flag <- p x
+       ys <- filterM' p xs
+       if flag then return ys else return (x : ys)
+-}
+
+--------------------------------------------
+
+foldLeftM :: Monad m => (a -> b -> m a) -> a -> [b] -> m a
+
+-- takes an accumulation function a -> b -> m a, and a seed of type a
+-- and left folds a finite, non-partial list of non-bottom elements of
+-- type b into a single result of type m a
+
+{-
+-- for reference,
+-- here is the definition of foldl
+foldl f z []     = z                  
+foldl f z (x:xs) = foldl f (f z x) xs
+-}
+
+foldLeftM f a [] = return a
+foldLeftM f a (x:xs)
+  = (f a x) >>= \ b -> foldLeftM f b xs
+
+-- what is the result of:
+--
+-- foldLeftM (\a b -> putChar b >> return (b : a ++ [b])) [] "haskell" >>= \r -> putStrLn r
+-- haskelllleksahhaskell
+
+--------------------------------------------
+
+foldRightM :: Monad m => (a -> b -> m b) -> b -> [a] -> m b
+
+{-
+-- for reference, here is the definition of foldr
+foldr f z []     = z 
+foldr f z (x:xs) = f x (foldr f z xs) 
+-}
+
+foldRightM f a [] = return a
+foldRightM f a (x:xs)
+  = foldRightM f a xs >>= \ b -> (f x b)
+
+-- foldRightM (\a b -> putChar a >> return (a : b)) [] (show [1,3..10]) >>= \r -> putStrLn r
+-- ]9,7,5,3,1[[1,3,5,7,9]
+
+--------------------------------------------
+
+liftM :: Monad m => (a -> b) -> m a -> m b
+
+-- takes a function of type a -> b and "maps" it over a non-bottom
+-- monadic value of type m a to produce a value of type m b?
+
+-- test with:
+-- liftM (\ a -> True) (return 1)
+-- True
+-- liftM (+2) (return 1)
+-- 3
+
+{-
+-- seems to work
+liftM f m
+  = do x <- m
+       return (f x)
+-}
+
+-- does not compile
+-- liftM f m = m >>= \ a -> f a
+
+-- seems to work
+liftM f m = m >>= \ a -> return (f a)
+
+-- does not compile
+-- liftM f m = return (f m)
+
+-- seems to work -- no, it was marked wrong
+-- liftM f m = m >>= \ a -> m >>= \ b -> return (f a)
+
+-- seems to work -- no, it was marked wrong
+-- liftM f m = m >>= \ a -> m >>= \ b -> return (f b)
+
+-- does not compile
+-- liftM f m = mapM f [m]
+
+-- does not compile
+-- liftM f m = m >> \ a -> return (f a)
+
 
 --------------------------------------------
 --------------------------------------------
