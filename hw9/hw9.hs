@@ -122,6 +122,9 @@ integerToNat = \ n -> genericLength [c | c <- show n, isDigit c]
 add :: Nat -> Nat -> Nat
 
 -- natToInteger (add m n) = natToInteger m + natToInteger n
+-- natToInteger (add (integerToNat 95) (integerToNat 33))
+-- 128
+
 
 {-
 -- works
@@ -171,6 +174,33 @@ add n Zero = n
 -}
 
 ------------------------------------------------------------
+
+mult :: Nat -> Nat -> Nat
+
+natToInteer (mult m n) = natToInteger m * natToInteger n
+
+{-
+mult Zero Zero = Zero
+mult m (Succ n) = add m (mult m n)
+-}
+
+{-
+-- correct
+mult m Zero = Zero
+mult m (Succ n) = add m (mult m n)
+-}
+
+{-
+mult m Zero = Zero
+mult m (Succ n) = add n (mult m n)
+-}
+
+{-
+mult m Zero = Zero
+mult m n = add m (mult m (Succ n))
+-}
+
+
 ------------------------------------------------------------
 ------------------------------------------------------------
 ------------------------------------------------------------
