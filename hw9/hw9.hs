@@ -17,12 +17,12 @@ data Nat = Zero
 -- 3
 --
 
+natToInteger :: Nat -> Integer
 
-{-
+
 -- works
 natToInteger Zero = 0
 natToInteger (Succ n) = natToInteger n + 1
--}
 
 {-
 -- works
@@ -66,11 +66,11 @@ natToInteger = \ n -> length [c | c <- show n, c == 'S']
 
 ------------------------------------------------------------
 
-{-
+integerToNat :: Integer -> Nat
+
 -- works
 integerToNat 0 = Zero
 integerToNat (n+1) = Succ (integerToNat n)
--}
 
 
 {-
@@ -118,6 +118,58 @@ integerToNat = \ n -> genericLength [c | c <- show n, isDigit c]
 
 
 ------------------------------------------------------------
+
+add :: Nat -> Nat -> Nat
+
+-- natToInteger (add m n) = natToInteger m + natToInteger n
+
+{-
+-- works
+add Zero n = n
+add (Succ m) n = Succ (add n m)
+-}
+
+{-
+-- works
+add (Succ m) n = Succ (add n m)
+add Zero n = n
+-}
+
+{-
+-- broken
+add Zero n = Zero
+add (Succ m) n = Succ (add m n)
+-}
+
+{-
+-- broken
+add (Succ m) n = Succ (add m n)
+add Zero n = Zero
+-}
+
+{-
+-- broken
+add n Zero = Zero
+add n (Succ m) = Succ (add n m)
+-}
+
+{-
+-- broken
+add n (Succ m) = Succ (add n m)
+add n Zero = Zero
+-}
+
+-- works
+add n Zero = n
+add n (Succ m) = Succ (add m n)
+
+
+{-
+-- works
+add n (Succ m) = Succ (add m n)
+add n Zero = n
+-}
+
 ------------------------------------------------------------
 ------------------------------------------------------------
 ------------------------------------------------------------
