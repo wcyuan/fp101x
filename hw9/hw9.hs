@@ -177,18 +177,18 @@ add n Zero = n
 
 mult :: Nat -> Nat -> Nat
 
-natToInteer (mult m n) = natToInteger m * natToInteger n
+-- natToInteer (mult m n) = natToInteger m * natToInteger n
 
 {-
 mult Zero Zero = Zero
 mult m (Succ n) = add m (mult m n)
 -}
 
-{-
+
 -- correct
 mult m Zero = Zero
 mult m (Succ n) = add m (mult m n)
--}
+
 
 {-
 mult m Zero = Zero
@@ -202,6 +202,53 @@ mult m n = add m (mult m (Succ n))
 
 
 ------------------------------------------------------------
+
+class Monoid a where
+        mempty :: a
+	(<>) :: a -> a -> a
+
+instance Monoid [a] where
+	mempty = []
+	(<>) = (++)
+
+------------------------------------------------------------
+
+{-
+class Functor f where
+        fmap :: (a -> b) -> f a -> f b
+
+instance Main.Functor Maybe where
+	fmap _ Nothing = Nothing
+	fmap f (Just a) = Just (f a)
+-}
+------------------------------------------------------------
+
+
+class (Functor f) => Foldable f where
+        fold :: (Monoid m) => f m -> m
+
+
+{-
+instance Foldable [] where
+	fold = foldl (map . (<>)) mempty
+-}
+
+{-
+instance Foldable [] where
+	fold xs = map (<>) xs
+-}
+
+
+-- only one that type checks
+instance Foldable [] where
+	fold = foldr (<>) mempty
+
+
+{-
+instance Foldable [] where
+	fold xs = concat . map (mempty)
+-}
+
 ------------------------------------------------------------
 ------------------------------------------------------------
 
