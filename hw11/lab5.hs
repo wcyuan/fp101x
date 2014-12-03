@@ -69,7 +69,9 @@ So what is Concurrent?  It is something that takes a continuation and returns an
 What is a continuation?  Is it something that takes a value and
 returns an action.  So a simple continuation is:
 
-  > let foo = \a -> stop
+  > let foo = \a -> Stop
+  foo
+  > let foo = \a -> Atom $ putStrLn a >> return Stop
   foo
 
 So a Concurrent should take foo and return an action.  Here is a simple concurrent.
@@ -154,35 +156,200 @@ Ex7
 -- ===================================
 
 atom :: IO a -> Concurrent a
-atom = error "You have to implement atom"
+-- atom :: IO a -> ((a -> Action) -> Action)
+-- atom = error "You have to implement atom"
 
+atom io_a = Concurrent $ \ f -> Atom $ io_a >>= (\ a -> return (f a))
+
+{-
+Ex8
+ > action . atom . putStrLn $ "Haskell"
+ atom
+Ex9
+ > action $ atom undefined
+ atom
+Ex10
+ > atom . putStrLn $ "Haskell"
+
+ <interactive>:148:1:
+    No instance for (Show (Concurrent ()))
+      arising from a use of `print'
+    Possible fix:
+      add an instance declaration for (Show (Concurrent ()))
+    In a stmt of an interactive GHCi command: print it
+-}
 
 -- ===================================
 -- Ex. 3
 -- ===================================
 
 fork :: Concurrent a -> Concurrent ()
-fork = error "You have to implement fork"
+--fork = error "You have to implement fork"
+--
+-- This type checks, but it doesn't seem right.  I need to use () somewhere
+-- fork c = Concurrent $ \ f -> action c
+--
+-- This also type checks, but also doesn't seem right, it's not using c anywhere
+-- fork (Concurrent c) = Concurrent $ \f -> f ()
+--
+-- also, for both of those
+--  > action $ fork stop
+--  stop
+-- which isn't one of the choices.  All the choices involve a fork, so
+-- it looks like it needs to create a fork somewhere, which makes
+-- sense given the name of the function, but the instructions don't
+-- say anything about creating a fork
+
+-- This seems so promising, but it doesn't type check
+-- fork c = Concurrent $ \ f -> f (\() -> (action c))
+--
+-- doesn't type check:
+-- fork (Concurrent c) = Concurrent $ \ f -> Fork (c ()) (f ())
+
+fork c = Concurrent $ \ f -> Fork (action c) (f ())
+
+{-
+Ex11
+ > action $ fork stop
+ fork stop stop
+Ex12
+ > action (fork (atom (putStr "Hacker")))
+ fork atom stop
+Ex13
+ > :type action (fork (atom (putStr "Hacker")))
+ action (fork (atom (putStr "Hacker"))) :: Action
+Ex14
+ > action (fork undefined)
+ fork *** Exception: Prelude.undefined
+-}
 
 par :: Concurrent a -> Concurrent a -> Concurrent a
-par = error "You have to implement par"
+-- par = error "You have to implement par"
+-- par c1 c2 = Concurrent $ \f -> fork c1 fork c2
+par (Concurrent a) (Concurrent b) = Concurrent $ \f -> Fork (a f) (b f)
 
+{-
+Ex15
+ > action $ par stop stop
+ fork stop stop
+Ex16
+ > action (par (atom (putStr "think")) (atom (putStr "hack")))
+ fork atom atom
+Ex17
+ > action (par stop $ fork stop)
+ fork stop fork stop stop
+Ex18
+ > action $ par (atom $ putChar 'x') (fork stop)
+ fork atom fork stop stop
+-}
 
 -- ===================================
 -- Ex. 4
 -- ===================================
 
+-- http://en.wikibooks.org/wiki/Haskell/Continuation_passing_style
+
+-- you probably need a "let ... in ... " expression to unwrap the Concurrent
+
 instance Monad Concurrent where
-    (Concurrent f) >>= g = error "You have to implement >>="
+    -- (>>=) :: (Concurrent a) -> (a -> (Concurrent b)) -> (Concurrent b)
+    -- (Concurrent f) >>= g = error "You have to implement >>="
+
+    -- This type checks, but is obviously wrong
+    -- (Concurrent f) >>= g = Concurrent $ \ h -> Stop
+    -- does not type check
+
+    -- f :: (a -> Action) -> Action
+    -- g :: (a -> (Concurrent b))
+    -- k :: (b -> Action)
+    -- x :: a
+    (Concurrent f) >>= g = Concurrent $ \ k -> f $ \ x -> let
+      (Concurrent b) = g x
+      in b k
+
     return x = Concurrent (\c -> c x)
 
+
+-- ibind :: ((a -> Int) -> Int) -> (a -> ((b -> Int) -> Int)) -> ((b -> Int) -> Int)
+-- ibind f g = \a -> g (f a)
+
+bind :: ((a -> Action) -> Action) -> (a -> ((b -> Action) -> Action)) -> ((b -> Action) -> Action)
+bind s f = \ k -> s $ \x -> f x $ k
+
+-- k :: b -> Action
+-- s :: (a -> Action) -> Action
+-- f :: a -> ((b -> Action) -> Action)
+-- x :: a
+
+{-
+ An aborted attempt:
+bind f g = \ bfunc -> (\ a c -> let
+     s = f c
+     t = c a
+     u = g a
+     in u bfunc) 1 (\x -> Stop)
+-}
+
+
+-- Another aborted attempt:
+--ibind :: ((a -> Int) -> Int)
+-- this type checks but is useless
+-- ibind f = f undefined
+--ibind f = (\a -> f a) undefined
+
+{-
+Ex19
+ > action (stop >>= (\c -> stop))
+ stop
+Ex20
+ > action (atom (putStrLn "whatever...") >>= stop)
+ <interactive>:129:43:
+    Couldn't match expected type `() -> Concurrent a0'
+                with actual type `Concurrent a1'
+    In the second argument of `(>>=)', namely `stop'
+    In the first argument of `action', namely
+      `(atom (putStrLn "whatever...") >>= stop)'
+    In the expression: action (atom (putStrLn "whatever...") >>= stop)
+Ex21
+ > stop >>= stop
+
+ <interactive>:130:10:
+    Couldn't match expected type `a0 -> Concurrent b0'
+                with actual type `Concurrent a1'
+    In the second argument of `(>>=)', namely `stop'
+    In the expression: stop >>= stop
+    In an equation for `it': it = stop >>= stop
+Ex22
+ > :t stop >>= stop
+
+ <interactive>:1:10:
+    Couldn't match expected type `a0 -> Concurrent b0'
+                with actual type `Concurrent a1'
+    In the second argument of `(>>=)', namely `stop'
+    In the expression: stop >>= stop
+Ex23
+ > action (fork stop >>= \_ -> fork stop)
+ fork stop fork stop stop
+-}
 
 -- ===================================
 -- Ex. 5
 -- ===================================
 
 roundRobin :: [Action] -> IO ()
-roundRobin = error "You have to implement roundRobin"
+--roundRobin = error "You must implement roundRobin"
+roundRobin [] = return ()
+roundRobin (Stop:as) = roundRobin as
+roundRobin (Fork a b:as) = roundRobin (as ++ [a] ++ [b])
+-- these type check but are obviously wrong
+--
+-- this goes into an infinite loop
+-- roundRobin (Atom io_act:as) = roundRobin (as ++ [Atom $ io_act >>= \act -> return act])
+--
+-- this just stops:
+-- roundRobin (Atom io_act:as) = roundRobin (as ++ [Stop])
+
+roundRobin (Atom io_act:as) = io_act >>= \act -> roundRobin (as ++ [act])
 
 -- ===================================
 -- Tests
@@ -213,3 +380,55 @@ genRandom 42   = [71, 71, 17, 14, 16, 91, 18, 71, 58, 75]
 
 loop :: [Int] -> Concurrent ()
 loop xs = mapM_ (atom . putStr . show) xs
+
+{-
+Ex24
+ > run ex0
+ 183969836351184424447619541356283739
+Ex25
+ > run ex1
+ Haskell177173719217361422167291191835716587475
+-}
+
+-- ===================================
+-- examples from the forums
+-- ===================================
+
+myex1 = run $ fork (ho >> ho >> ho) >>
+                   (hi >> hi >> hi) >> atom (putStr "\n")
+  where ho = atom (putStr "ho")
+        hi = atom (putStr "hi")
+
+-- Should produce: hohihohihohi
+-- If we fork twice, something interesting happens:
+
+myex2 = run $ fork (put3 "ba") >> fork (put3 "di") >>
+        put3 "bu" >> atom (putStr "\n")
+  where put3 = sequence . take 3 . repeat . atom . putStr
+
+-- In my implementation, this produces: babadibubadibudibu
+-- Finally, an example using par:
+
+myex3 = run $ par (put3 "ba") (put3 "di" >> stop) >>
+              atom (putStr "\n")
+  where put3 = sequence . take 3 . repeat . atom . putStr
+
+-- 
+
+syracuse :: Int -> Concurrent Int
+syracuse 1 = return 1
+syracuse n = (print n) >>= syr >>= syracuse
+  where print n = do atom $ putStr $ (show  n) ++ " " 
+                     return n
+        syr n | n `mod` 2 == 0 = return (n `div` 2)
+              | otherwise      = return (3 * n + 1) 
+
+ex6 :: Int -> Concurrent ()
+ex6 n = do syracuse n
+           atom $ putStrLn ""
+
+-- Testing it:
+-- Lab5> run $ ex6 15
+-- 15 46 23 70 35 106 53 160 80 40 20 10 5 16 8 4 2
+
+
