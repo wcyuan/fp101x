@@ -1,0 +1,300 @@
+Rose Trees
+
+<DISCLAIMER-0>
+For this lab, we provide a template file which contains the signatures of the functions to be implemented, as well as some definitions that will be needed in order to answer the questions. We suggest you make use of this template when solving the exercises.
+</DISCLAIMER-0>
+
+<DISCLAIMER-1> 
+The example input and functions provided by us are obfuscated on purpose in order to make sure that you actually write code instead of solving the exercises by hand. DON'T TRY THIS IN PRODUCTION!
+</DISCLAIMER-1>
+
+<DISCLAIMER-2>
+In this lab we assume, as usual, that bottom does not exist. We assume you have progressed enough to do "fast-and-loose reasoning".
+</DISCLAIMER-2>
+
+A Rose Tree, or multi-way tree, is a tree data structure in which each node can store one value and have an arbitrary number of children. Rose trees can be represented by the algebraic data type:
+
+data Rose a = a :> [Rose a] deriving Show
+
+Note that here :> is a constructor written in infix notation. In Haskell, infix constructors can only consist of symbols and must start with a colon.
+
+EXERCISE 0  (1 point possible)
+Write the functions:
+
+root :: Rose a -> a
+children :: Rose a -> [Rose a]
+
+that return the value stored at the root of a rose tree, respectively the children of the root of a rose tree.
+
+For example:
+
+root (1 :> [2 :> [], 3 :> []]) = 1
+root ('a' :> []) = 'a'
+children (1 :> [2 :> [], 3 :> []]) = [2 :> [], 3 :> []]
+children ('a' :> []) = []
+
+Given the following Rose Tree:
+
+tree = 'x' :> map (flip (:>) []) ['a'..'x']
+
+what is the result of evaluating the following expression:
+
+length $ children tree
+
+ - unanswered
+ 
+    You have used 0 of 1 submissions
+EXERCISE 1  (1 point possible)
+Given the following Rose Tree:
+
+tree = 'x' :> map (\c -> c :> []) ['a'..'A']
+
+what is the result of evaluating the following expression:
+
+length (children tree)
+
+ - unanswered
+ 
+    You have used 0 of 1 submissions
+EXERCISE 2  (1 point possible)
+Given the following input rose tree:
+
+xs = 0 :> [1 :> [2 :> [3 :> [4 :> [], 5 :> []]]], 6 :> [], 7 :> [8 :> [9 :> [10 :> []], 11 :> []], 12 :> [13 :> []]]]
+What is the result of the following expression?
+root . head . children . head . children . head . drop 2 $ children xs
+
+ - unanswered
+ 
+    You have used 0 of 1 submissions
+EXERCISE 3  (1 point possible)
+Write the functions
+
+size :: Rose a -> Int
+leaves :: Rose a -> Int
+
+that count the number of nodes in a rose tree, respectively the number of leaves (nodes without any children).
+
+Given the following Rose Tree:
+
+tree = 1 :> map (\c -> c :> []) [1..5]
+
+what is the result of evaluating the following expression:
+
+size tree
+
+ - unanswered
+ 
+    You have used 0 of 1 submissions
+EXERCISE 4  (1 point possible)
+Given the following Rose Tree:
+
+tree = 1 :> map (\c -> c :> []) [1..5]
+
+what is the result of evaluating the following expression:
+
+size . head . children $ tree
+
+ - unanswered
+ 
+    You have used 0 of 1 submissions
+EXERCISE 5  (1 point possible)
+Given the following Rose Tree:
+
+tree = 1 :> map (\c -> c :> []) [1..5]
+
+what is the result of evaluating the following expression:
+
+leaves tree
+
+ - unanswered
+ 
+    You have used 0 of 1 submissions
+EXERCISE 6  (1 point possible)
+Given the following Rose Tree:
+
+tree = 1 :> map (\c -> c :> []) [1..5]
+
+what is the result of evaluating the following expression:
+
+product (map leaves (children tree))
+
+ - unanswered
+ 
+    You have used 0 of 1 submissions
+EXERCISE 7  (1 point possible)
+Using the same definition of xs from exercise 2, what is the result of the following expression:
+
+(*) (leaves . head . children . head . children $ xs) (product . map size . children . head . drop 2 . children $ xs)
+ what is the result of the following expression - unanswered
+ 
+    You have used 0 of 1 submissions
+EXERCISE 8  (1 point possible)
+Similarly to how we might want to apply a function uniformly to all elements in a list, we might also want to apply a function uniformly to all the elements in a rose tree, or any other container-like data structure for that matter.
+
+For this purpose Haskell has a Functor type class, exposing a single function fmap that generalizes the map function:
+
+class Functor f where 
+  fmap :: (a -> b) -> f a -> f b
+We see that fmap generalizes map by giving a Functor instance for lists:
+
+instance Functor [] where
+  fmap = map
+Verify that fmap and map have the same type if we instantiate f to [].
+Write a Functor instance for the Rose data type.
+
+instance Functor Rose where { fmap = error "you have replace this error with an implementation of fmap for Rose" }
+For example:
+
+fmap (*2) (1 :> [2 :> [], 3 :> []]) = (2 :> [4 :> [], 6 :> []])
+fmap (+1) (1 :> []) = (2 :> [])
+
+Given the following Rose Tree:
+
+tree = 1 :> map (\c -> c :> []) [1..5]
+
+what is the result of evaluating the following expression:
+
+size (fmap leaves (fmap (:> []) tree))
+
+ - unanswered
+ 
+    You have used 0 of 1 submissions
+EXERCISE 9  (1 point possible)
+Given the function f r = fmap head $ fmap (\x -> [x]) r, what is a valid type signature for f
+
+- unanswered Rose a -> Rose [a] Rose a -> Rose a Rose a -> [Rose a] Functor f => f a -> f b
+   You have used 0 of 1 submissions
+EXERCISE 10  (1 point possible)
+Again, using xs as defined above, what is the result of the following expression:
+
+round . root . head . children . fmap (\x -> if x > 0.5 then x else 0) $ fmap (\x -> sin(fromIntegral x)) xs
+ Again using xs as defined above, what is the result of the following expression - unanswered
+ 
+    You have used 0 of 1 submissions
+EXERCISE 11  (1 point possible)
+A Monoid is an algebraic structure over a type m with a single associative binary operation mappend :: m -> m -> m and an identity element mempty :: m.
+
+class Monoid m where
+  mempty :: m
+  mappend :: m -> m -> m
+  
+For example, lists are Monoids:
+
+instance Monoid [] where
+  mempty = []
+  xs `mappend` ys = xs ++ ys
+  
+As an exercise:
+
+Verify that (++) is an associative operation (i.e. that for any xs ys zs, (xs ++ ys) ++ zs = xs ++ (ys ++ zs))
+
+Verify that the empty list [] is indeed an identity element with respect to list concatenation (++) (i.e. that for any list ls, [] ++ ls = ls and ls ++ [] = ls).
+
+Numbers also form a Monoid, both under addition with 0 as the identity element, and under multiplication with 1 as the identity element (verify this).
+However, we are only allowed to give one instance per combination of type and type class. To overcome this limitation we create some newtype wrappers:
+
+newtype Sum a = Sum a deriving Show
+newtype Product a = Product a deriving Show
+
+Before proceeding, implement two unwrap functions unSum :: Sum a -> a and unProduct :: Product a -> a that remove the newtype wrappers.
+
+Complete the Monoid instances for Sum and Product in the template.
+
+What is the result of evaluating the following expression
+
+unProduct (Product 6 `mappend` (Product . unSum $ Sum 3 `mappend` Sum 4))
+
+ - unanswered
+ 
+    You have used 0 of 1 submissions
+EXERCISE 12  (1 point possible)
+What is a valid type signature of the expression: Sum 3 `mappend` Sum 4?
+
+- unanswered Num num => Sum (unSum num) Int int => Sum int Num string => Sum string All of the above
+   You have used 0 of 1 submissions
+EXERCISE 13  (1 point possible)
+Using the following expressions:
+
+num1 = mappend (mappend (Sum 2) (mappend (mappend mempty (Sum 1)) mempty)) (mappend (Sum 2) (Sum 1))
+num2 = mappend (Sum 3) (mappend mempty (mappend (mappend (mappend (Sum 2) mempty) (Sum (-1))) (Sum 3)))
+What is the result of evaluating the following expression:
+
+unSum (mappend (Sum 5) (Sum (unProduct (mappend (Product (unSum num2)) (mappend (Product (unSum num1)) (mappend mempty (mappend (Product 2) (Product 3))))))))
+ what is the result of the following expression - unanswered
+ 
+    You have used 0 of 1 submissions
+EXERCISE 14  (1 point possible)
+If f is some container-like data structure storing elements of type m that form a Monoid, then there is a way of folding all the elements in the data structure into a single element of the monoid m. The following declaration defines the type class Foldable:
+
+class Functor f => Foldable f where
+  fold :: Monoid m => f m -> m
+Here is an example of how to make [a] an instance of Foldable:
+
+instance Foldable [] where
+  fold = foldr (mappend) mempty
+Write a Foldable instance for Rose.
+
+Given the following definitions:
+
+tree = 1 :> [2 :> [], 3 :> [4 :> []]]
+tree' = fmap Product tree
+
+What is the result of evaluating the following expression: unProduct $ fold tree'
+
+ - unanswered
+ 
+    You have used 0 of 1 submissions
+EXERCISE 15  (1 point possible)
+Define now sumxs as:
+
+sumxs = Sum 0 :> [Sum 13 :> [Sum 26 :> [Sum (-31) :> [Sum (-45) :> [], Sum 23 :> []]]], Sum 27 :> [], Sum 9 :> [Sum 15 :> [Sum 3 :> [Sum (-113) :> []], Sum 1 :> []], Sum 71 :> [Sum 55 :> []]]]
+Using sumxs, what is the result of the following expression:
+
+unSum (mappend (mappend (fold sumxs) (mappend (fold . head . drop 2 . children $ sumxs) (Sum 30))) (fold . head . children $ sumxs))
+ Using sumxs, what is the result of the following expression - unanswered
+ 
+    You have used 0 of 1 submissions
+EXERCISE 16  (1 point possible)
+It might be the case that we have a foldable data structure storing elements of type a that do not yet form a Monoid, but where we do have a function of type Monoid m => a -> m that transforms them into one. To this end it would be convenient to have a function foldMap :: Monoid m => (a -> m) -> f a -> m that first transforms all the elements of the foldable into a Monoid and then folds them into a single monoidal value.
+
+Add a default implementation of foldMap to the Foldable type class, expressed in terms of fold and fmap.
+
+Given is the following tree: tree = 42 :> [3 :> [2:> [], 1 :> [0 :> []]]].
+
+What is the result of evaluating the following expression: unSum $ foldMap Sum tree
+
+ - unanswered
+ 
+    You have used 0 of 1 submissions
+EXERCISE 17  (1 point possible)
+Using xs as defined above, what is the result of the following expression:
+
+unSum (mappend (mappend (foldMap (\x -> Sum x) xs) (mappend (foldMap (\x -> Sum x) . head . drop 2 . children $ xs) (Sum 30))) (foldMap (\x -> Sum x) . head . children $ xs))
+ what is the result of the following expression - unanswered
+ 
+    You have used 0 of 1 submissions
+EXERCISE 18  (1 point possible)
+Using xs as defined above, what is the result of the following expression:
+
+unSum (mappend (mappend (foldMap (\x -> Sum x) xs) (Sum (unProduct (mappend (foldMap (\x -> Product x) . head . drop 2 . children $ xs) (Product 3))))) (foldMap (\x -> Sum x) . head . children $ xs))
+ Using xs as defined above, what is the result of the following expression - unanswered
+ 
+    You have used 0 of 1 submissions
+EXERCISE 19  (1 point possible)
+Write functions fsum, fproduct :: (Foldable f , Num a) => f a -> a that compute the sum, respectively product, of all numbers in a foldable data structure.
+
+Using xs as defined above, what is the result of the following expression:fsum xs
+
+ - unanswered
+ 
+    You have used 0 of 1 submissions
+EXERCISE 20  (1 point possible)
+Using xs as defined above, what is the result of the following expression:fproduct xs
+
+ - unanswered
+ 
+    You have used 0 of 1 submissions
+EXERCISE 21  (1 point possible)
+Using xs as defined above, what is the result of the following expression:
+
+((fsum . head . drop 1 . children $ xs) + (fproduct . head . children . head . children . head . drop 2 . children $ xs)) - (fsum . head . children . head . children $ xs)
